@@ -22,7 +22,7 @@ jobs:
       uses: actions/github-script@v4
       with:
         script: |
-          github.issues.createComment({
+          await github.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -34,9 +34,9 @@ jobs:
       uses: actions/github-script@v4
       with:
         script: |
-          await github.rest.issues.addAssignees({
+          await github.issues.addAssignees({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            assignees: [context.actor],  # use context.actor instead of github.actor
+            assignees: [context.actor]
           });
