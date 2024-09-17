@@ -28,10 +28,10 @@ jobs:
             repo: context.repo.repo,
             issue_number: context.issue.number
           });
-          return issue.data.assignees.length > 0 ? { hasAssignees: true } : { hasAssignees: false };
+          return issue.data.assignees.length > 0 ? { hasAssignees: false } : { hasAssignees: true };
           
     - name: Comment on the issue
-      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'false'
+      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'true'
       uses: actions/github-script@v4
       with:
         script: |
@@ -43,7 +43,7 @@ jobs:
           });
 
     - name: Assign issue
-      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'false'
+      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'true'
       uses: actions/github-script@v4
       with:
         script: |
