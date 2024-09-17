@@ -1,0 +1,33 @@
+name: 'Assign Issue on Keyword'
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  assign_issue:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check for keyword
+      if: contains(github.event.comment.body, 'ASSIGN_ME')
+      run: |
+        echo "Keyword found, proceeding to assign..."
+
+    - name: Comment on the issue
+      if: contains(github.event.comment.body, 'ASSIGN_ME')
+      uses: actions/github-script@v4
+      with:
+        script: |
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Thanks for taking on this issue',
+          });
+
+    - name: Assign issue
+      if: contains(github.event.comment.body, 'ASSIGN_ME')
+      uses: peter-evans/assign-issue-to-assignee@v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
