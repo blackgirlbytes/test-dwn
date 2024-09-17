@@ -4,6 +4,10 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  issues: write  # Ensures the workflow can write to issues
+  pull-requests: write  # Ensures the workflow can write to pull requests
+
 jobs:
   assign_issue:
     runs-on: ubuntu-latest
@@ -11,8 +15,7 @@ jobs:
     steps:
     - name: Check for keyword
       if: contains(github.event.comment.body, 'ASSIGN_ME')
-      run: |
-        echo "Keyword found, proceeding to assign..."
+      run: echo "Keyword found, proceeding to assign..."
 
     - name: Comment on the issue
       if: contains(github.event.comment.body, 'ASSIGN_ME')
@@ -31,9 +34,9 @@ jobs:
       uses: actions/github-script@v4
       with:
         script: |
-          github.issues.addAssignees({
+          await github.rest.issues.addAssignees({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            assignees: [github.actor],
+            assignees: [context.actor],  # use context.actor instead of github.actor
           });
