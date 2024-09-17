@@ -14,6 +14,7 @@ jobs:
 
     steps:
     - name: Check for keyword
+      id: keyword_check
       if: contains(github.event.comment.body, 'ASSIGN_ME')
       run: echo "Keyword found, proceeding to assign..."
 
@@ -27,10 +28,10 @@ jobs:
             repo: context.repo.repo,
             issue_number: context.issue.number
           });
-          return issue.data.assignees.length > 0 ? 'true' : 'false';
-
+          return issue.data.assignees.length > 0 ? { hasAssignees: true } : { hasAssignees: false };
+          
     - name: Comment on the issue
-      if: contains(github.event.comment.body, 'ASSIGN_ME') && steps.check_assignees.outputs.result == 'false'
+      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'false'
       uses: actions/github-script@v4
       with:
         script: |
@@ -42,7 +43,7 @@ jobs:
           });
 
     - name: Assign issue
-      if: contains(github.event.comment.body, 'ASSIGN_ME') && steps.check_assignees.outputs.result == 'false'
+      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'false'
       uses: actions/github-script@v4
       with:
         script: |
