@@ -1,55 +1,26 @@
-name: 'Assign Issue on Keyword'
-
+name: Auto-assign issue to contributor
 on:
   issue_comment:
-    types: [created]
-
-permissions:
-  issues: write  # Ensures the workflow can write to issues
-  pull-requests: write  # Ensures the workflow can write to pull requests
 
 jobs:
-  assign_issue:
+  assign:
+    name: Take an issue
     runs-on: ubuntu-latest
-
+    permissions:
+      issues: write
+    if: ${{ github.event.created_at >= format('{0}-10-01T00:00:00Z', github.event.created_at.substr(0,4)) && github.event.created_at <= format('{0}-10-31T23:59:59Z', github.event.created_at.substr(0,4)) }}
     steps:
-    - name: Check for keyword
-      id: keyword_check
-      if: contains(github.event.comment.body, 'ASSIGN_ME')
-      run: echo "Keyword found, proceeding to assign..."
+    - name: take the issue
+      uses: bdougie/take-action@1439165ac45a7461c2d89a59952cd7d941964b87
+      with:
+        message: Thanks for taking this issue! Let us know if you have any questions!
+        trigger: .take
+        token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Check for existing assignees
-      id: check_assignees
-      uses: actions/github-script@v4
-      with:
-        script: |
-          const issue = await github.issues.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number
-          });
-          return issue.data.assignees.length > 0 ? { hasAssignees: false } : { hasAssignees: true };
-          
-    - name: Comment on the issue
-      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'true'
-      uses: actions/github-script@v4
-      with:
-        script: |
-          await github.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: 'Thanks for taking on this issue',
-          });
-
-    - name: Assign issue
-      if: steps.keyword_check.conclusion == 'success' && steps.check_assignees.outputs.hasAssignees == 'true'
-      uses: actions/github-script@v4
-      with:
-        script: |
-          await github.issues.addAssignees({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            assignees: [context.actor]
-          });
+  log_out_of_october:
+    name: Log when outside October
+    runs-on: ubuntu-latest
+    if: ${{ !(github.event.created_at >= format('{0}-10-01T00:00:00Z', github.event.created_at.substr(0,4)) && github.event.created_at <= format('{0}-10-31T23:59:59Z', github.event.created_at.substr(0,4))) }}
+    steps:
+    - name: Log skipped action
+      run: echo "Action skipped because the current date is not in October."
