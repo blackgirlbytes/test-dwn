@@ -49,7 +49,7 @@ jobs:
           const labels = ${{ steps.issue_labels.outputs.result }};
           const hacktoberfestLabel = labels.some(label => label.toLowerCase().includes('hacktoberfest'));
           const sizeLabelPresent = labels.some(label => ['small', 'medium', 'large'].includes(label.toLowerCase()));
-          return hacktoberfestLabel || sizeLabelPresent;
+          return hacktoberfestLabel || (hacktoberfestLabel && sizeLabelPresent);
     - name: Add labels to PR
       if: steps.issue_number.outputs.has_issue == 'true' && steps.check_labels.outputs.result == 'true'
       uses: actions/github-script@v6
